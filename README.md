@@ -1,138 +1,109 @@
-# 🚦 Traffic AI Master – Intelligent Traffic Surveillance System
+🚗 Vehicle Collision Detection using YOLOv8 (README)
+📘 Overview
 
-This project is a **multi-module traffic analysis system** powered by **YOLOv8 (Ultralytics)** and **DeepSORT** for real-time vehicle tracking and behavioral analytics.  
-It includes five AI-powered features for automated traffic monitoring, anomaly detection, and violation alerting.
+This project performs real-time vehicle collision detection using:
 
----
+YOLOv8m for detecting vehicles
 
-## 🧠 Features
+IoU calculation to detect overlapping bounding boxes
 
-### 1️⃣ Vehicle Speed & Violation Detection
-- Detects and tracks vehicles using YOLOv8 + DeepSORT.
-- Calculates real-time speed based on pixel distance and frame rate.
-- Highlights vehicles exceeding the speed limit (>45 km/h).
-- Saves annotated output video with detected speeds and violations.
+OpenCV for video processing and visualization
 
----
+When two vehicles overlap beyond a specified IoU threshold, the system highlights them in red and displays a “Collision Happened” alert.
 
-### 2️⃣ Lane Detection + Traffic Density Monitoring
-- Uses **Canny edge detection** and **Hough Transform** to estimate lanes.
-- Detects vehicles and counts them per lane using YOLOv8 + DeepSORT.
-- Calculates traffic density dynamically.
-- Displays warnings for high-density traffic conditions.
 
----
 
-### 3️⃣ Wrong-Way Detection
-- Tracks direction of vehicle motion.
-- Alerts when vehicles move **opposite** to the expected flow (user-input: `in` / `out`).
-- Highlights wrong-way vehicles in **red** and correct vehicles in **green**.
+🔍 How It Works
+1. Vehicle Detection
 
----
+Using YOLOv8m, the following COCO vehicle classes are detected:
 
-### 4️⃣ Collision Detection (YOLO + IoU)
-- Detects possible collisions based on **bounding box overlap (IoU)** between vehicles.
-- Marks collisions with red boxes and displays **“Collision Happened”** alert.
-- Simple, fast, and accurate IoU-based logic — **no tracking dependency**.
+Car (ID: 2)
 
----
+Motorcycle (ID: 3)
 
-### 5️⃣ Anomaly Detection
-- Detects **sudden stops** and **zigzag driving** patterns using DeepSORT tracking and motion analysis.
-- Computes vehicle speed using temporal movement smoothing.
-- Alerts and labels detected anomalies in real-time.
+Bus (ID: 5)
 
----
-## 🧩 System Architecture
+Truck (ID: 7)
 
-┌──────────────────────────┐
-│ Input Video │
-└─────────────┬────────────┘
+Bounding boxes are drawn in green.
+
+2. Collision Detection (IoU-Based)
+
+The code computes Intersection over Union (IoU) between every pair of detected vehicles.
+
+If:     
+       IoU > threshold  (default = 0.1)
+
+
+Then both boxes are marked as:
+
+Red bounding box
+
+A label: "Collision Happened"
+
+This is a simple but effective approach for detecting physical overlap or near-touching vehicles in traffic videos.
+
+collision_detection/
 │
-YOLOv8 Object Detection
-│
-DeepSORT Multi-Tracking
-│
-┌────────┼─────────────┐
-│ │ │
-Speed Lane Density Anomaly
-│ │ │
-▼ ▼ ▼
-Collision Wrong-Way Output Videos
-Detection Detection
----
+├── collision_detection.py     # Main detection script
+├── video.mp4                  # Input video
+└── README.md                  # Documentation
 
-## ⚙️ Requirements
+🛠 Requirements
 
-### 🧰 Dependencies
-Install these before running:
-```bash
+Install dependencies:
+
 pip install ultralytics
 pip install opencv-python
-pip install torch torchvision torchaudio
 pip install numpy
-pip install deep-sort-realtime
-💻 Hardware
-GPU (CUDA) recommended for real-time performance.
 
-Works on CPU (slower but functional).
-
-🗂️ Project Structure
-Traffic-AI-Master/
-│
-├── traffic_ai_master.py     # Main script with 5 modules
-├── README.md                # Documentation file
-├── output_speed_violation.mp4
-├── output_lane_density.mp4
-├── output_wrongway.mp4
-├── output_anomaly.mp4
-├── output_collision.mp4
-└── input_videos/
-    ├── input_trafic4.mp4
-    ├── WhatsApp Video 2025-11-06...
-    └── WhatsApp Video 2025-11-07...
+YOLOv8m will download automatically on the first run.
 
 
-🚀 How to Run
+▶️ Usage
+1. Set the video path:
+          video_path = r"C:\path\to\your\video.mp4"
 
-Clone or copy this repository to your local system.
+2. Run the script:
+          python collision_detection.py
 
-Place your input videos in the project folder and update the paths inside the script if needed.
+3. Controls
 
-Run the program:
-        python traffic_ai_master.py
+Press Q to exit the video window.
 
-Choose a mode:
-        1️⃣ Vehicle Speed + Violation Detection
-        2️⃣ Lane Detection + Traffic Density
-        3️⃣ Wrong-Way Detection
-        4️⃣ Collision Detection
-        5️⃣ Anomaly Detection
+📌 Code Breakdown
+IoU Function
 
-Press ‘q’ to quit any mode.
+Calculates overlap between two bounding boxes.
 
-Processed videos are automatically saved as:
+detect_vehicle_collisions()
 
-output_speed_violation.mp4
+Iterates over all vehicle boxes and checks if IoU > threshold.
 
-output_lane_density.mp4
+YOLO Detection
 
-output_wrongway.mp4
+Extracts bounding boxes and filters by COCO vehicle class IDs.
 
-output_anomaly.mp4
+Visualization
 
-🧑‍💻 Author
+Green → Normal vehicles
 
-Raghav
-🎓 Chennai Institute of Technology
-💼 Pursuing Cyber Security (2nd Year)
-💡 Interests: Cybersecurity, AI, Web Development, and CTF Challenges
+Red → Vehicles involved in collision
 
-🏁 Output Previews
-Module	Output
-Speed & Violation	🚗 Speed overlay + Violation alert
-Lane Density	🛣️ Lane count + Density value
-Wrong-Way	🔄 Direction check alert
-Collision	💥 Collision marking in red
-Anomaly	⚠️ ZigZag & Sudden Stop alerts
+Text overlay → “Collision Happened”
 
+🎯 Example Output
+
+✔ Vehicles detected in green
+✔ Colliding vehicles highlighted in red
+✔ Warning text above collision area
+✔ Real-time display using OpenCV
+
+⚠️ Limitations
+
+IoU-based collision is purely bounding-box overlap, not physical crash detection.
+
+Works best with fixed cameras and clear visibility.
+
+May detect false collisions in crowded scenes.   
